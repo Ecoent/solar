@@ -11,7 +11,7 @@ import TestnetBadge from "../Dialog/TestnetBadge"
 import { Box } from "../Layout/Box"
 import MainTitle from "../MainTitle"
 import TransactionSender from "../TransactionSender"
-import Offramp from "../Withdrawal/Offramp"
+import WithdrawalDialogForm from "./WithdrawalDialogForm"
 
 interface Props {
   account: Account
@@ -56,7 +56,7 @@ function WithdrawalDialog(props: Props) {
       actions={dialogActionsRef}
     >
       <Box margin="24px 0 0">{null}</Box>
-      <Offramp
+      <WithdrawalDialogForm
         account={props.account}
         actionsRef={dialogActionsRef}
         assets={trustedAssets.filter(asset => !asset.isNative())}

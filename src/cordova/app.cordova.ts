@@ -4,7 +4,7 @@
  */
 
 import { trackError } from "./error"
-import { handleMessageEvent, registerCommandHandler, commands, events } from "./ipc"
+import { handleMessageEvent, registerCommandHandler, sendSuccessResponse, sendErrorResponse } from "./ipc"
 import initializeQRReader from "./qr-reader"
 import { getCurrentSettings, initSecureStorage, storeKeys, initKeyStore } from "./storage"
 import { bioAuthenticate, isBiometricAuthAvailable } from "./bio-auth"
@@ -130,11 +130,11 @@ function authenticate(contentWindow: Window) {
 }
 
 function showHtmlSplashScreen(contentWindow: Window) {
-  contentWindow.postMessage(commands.showSplashScreen, "*")
+  contentWindow.postMessage(IPC.Messages.ShowSplashScreen, "*")
 }
 
 function hideHtmlSplashScreen(contentWindow: Window) {
-  contentWindow.postMessage(commands.hideSplashScreen, "*")
+  contentWindow.postMessage(IPC.Messages.HideSplashScreen, "*")
 }
 
 function onPause(contentWindow: Window) {
@@ -156,7 +156,7 @@ function onResume(contentWindow: Window) {
 }
 
 function initializeClipboard(cordova: Cordova) {
-  registerCommandHandler(commands.copyToClipboard, event => {
+  registerCommandHandler(IPC.Messages.CopyToClipboard, event => {
     return new Promise((resolve, reject) => {
       cordova.plugins.clipboard.copy(event.data.text, resolve, reject)
     })
@@ -215,7 +215,7 @@ function initializeIPhoneNotchFix() {
 }
 
 function setupLinkListener(contentWindow: Window) {
-  registerCommandHandler(commands.openLink, event => {
+  registerCommandHandler(IPC.Messages.OpenLink, event => {
     return new Promise(() => {
       const url: string = event.data.url
       openUrl(contentWindow, url)
@@ -229,23 +229,20 @@ function setupBioAuthTestHandler() {
     try {
       await bioAuthenticate(clientSecret)
       refreshLastNativeInteractionTime()
-      contentWindow.postMessage({ eventType: events.testBioAuthResponseEvent, id: event.data.id }, "*")
+      sendSuccessResponse(contentWindow, event)
     } catch (error) {
-      contentWindow.postMessage({ eventType: events.testBioAuthResponseEvent, id: event.data.id, error }, "*")
+      sendErrorResponse(contentWindow, event, error)
     }
   }
 
-  registerCommandHandler(commands.testBioAuthCommand, messageHandler)
+  registerCommandHandler(IPC.Messages.TestBioAuth, messageHandler)
 }
 
 function setupBioAuthAvailableHandler() {
   const messageHandler = async (event: MessageEvent, contentWindow: Window) => {
     const checkAuthAvailability = async () => {
       const authAvailable = await isBiometricAuthAvailable()
-      contentWindow.postMessage(
-        { eventType: events.bioAuthAvailableResponseEvent, id: event.data.id, available: authAvailable },
-        "*"
-      )
+      sendSuccessResponse(contentWindow, event, authAvailable)
     }
 
     if (bioAuthInProgress) {
@@ -257,7 +254,7 @@ function setupBioAuthAvailableHandler() {
     }
   }
 
-  registerCommandHandler(commands.bioAuthAvailableCommand, messageHandler)
+  registerCommandHandler(IPC.Messages.BioAuthAvailable, messageHandler)
 }
 
 function openUrl(contentWindow: Window, url: string) {

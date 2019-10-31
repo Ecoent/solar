@@ -4,8 +4,7 @@ import {
   loadIgnoredSignatureRequestHashes,
   loadSettings,
   saveIgnoredSignatureRequestHashes,
-  saveSettings,
-  SettingsData
+  saveSettings
 } from "../platform/settings"
 import { trackError } from "./notifications"
 
@@ -30,7 +29,7 @@ interface ContextType {
   toggleHideMemos: () => void
 }
 
-const initialSettings: SettingsData = {
+const initialSettings: Platform.SettingsData = {
   agreedToTermsAt: undefined,
   biometricLock: false,
   multisignature: false,
@@ -89,7 +88,7 @@ export function SettingsProvider(props: Props) {
     }
   }
 
-  const updateSettings = (update: Partial<SettingsData>) => {
+  const updateSettings = (update: Partial<Platform.SettingsData>) => {
     try {
       const updatedSettings = {
         ...settings,

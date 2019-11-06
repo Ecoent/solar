@@ -10,6 +10,7 @@ import initializeQRReader from "./qr-reader"
 import { getCurrentSettings, initSecureStorage, storeKeys, initKeyStore } from "./storage"
 import { bioAuthenticate, isBiometricAuthAvailable } from "./bio-auth"
 import { registerURLHandler } from "./protocol-handler"
+import { registerUpdateHandler } from "./updater"
 
 const iframe = document.getElementById("walletframe") as HTMLIFrameElement
 const showSplashScreenOnIOS = () => (process.env.PLATFORM === "ios" ? navigator.splashscreen.show() : undefined)
@@ -55,6 +56,7 @@ function onDeviceReady() {
   }
 
   registerURLHandler(contentWindow, iframeReady)
+  registerUpdateHandler()
   initializeQRReader()
   initializeClipboard(cordova)
   initializeIPhoneNotchFix()

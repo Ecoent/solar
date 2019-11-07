@@ -49,6 +49,7 @@ interface Props {
   brandColored?: boolean
   background?: React.ReactNode
   children: React.ReactNode
+  inheritBackground?: boolean
   excessWidth?: number
   fitToShrink?: boolean
   top?: React.ReactNode
@@ -90,6 +91,7 @@ function DialogBody(props: Props) {
     <ErrorBoundary>
       <Section
         brandColored={props.brandColored}
+        inheritBackground={props.inheritBackground}
         width="100%"
         height="100%"
         maxWidth={900}

@@ -89,9 +89,9 @@ function WithdrawalDialogForm(props: Props) {
   const accountData = useLiveAccountData(props.account.publicKey, props.account.testnet)
   const transferInfos = useAssetTransferServerInfos(props.assets, props.testnet)
 
-  const withdrawableAssetCodes = Object.keys(transferInfos.data).filter(assetCode => {
-    const transferInfo = transferInfos.data[assetCode].transferInfo
-    return transferInfo.withdraw && transferInfo.withdraw.enabled
+  const withdrawableAssets = props.assets.filter(asset => {
+    const data = transferInfos.data.get(asset)
+    return data && data.transferInfo.withdraw && data.transferInfo.withdraw.enabled
   })
 
   const createWithdrawalTx = async (amount: BigNumber, asset: Asset, response: WithdrawalSuccessResponse) => {
@@ -229,7 +229,7 @@ function WithdrawalDialogForm(props: Props) {
         <InlineLoader />
       </Box>
     )
-  } else if (withdrawableAssetCodes.length === 0) {
+  } else if (withdrawableAssets.length === 0) {
     return (
       <Box margin="32px 0 0" textAlign="center">
         <Typography>This account holds no withdrawable assets.</Typography>
@@ -279,8 +279,9 @@ function WithdrawalDialogForm(props: Props) {
           initialMethod={currentState.details && currentState.details.method}
           onCancel={props.onCancel}
           onSubmit={handleWithdrawalFormSubmission}
-          testnet={props.testnet}
           pendingAnchorCommunication={withdrawalRequestPending || withdrawalResponsePending}
+          testnet={props.testnet}
+          withdrawableAssets={withdrawableAssets}
         />
         <TransactionReviewDialog
           account={props.account}

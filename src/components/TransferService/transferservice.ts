@@ -16,9 +16,7 @@ interface ExtendedTransferInfo {
 }
 
 export interface AssetTransferInfos {
-  data: {
-    [assetCode: string]: ExtendedTransferInfo
-  }
+  data: WeakMap<Asset, ExtendedTransferInfo>
   loading: boolean
 }
 
@@ -44,7 +42,7 @@ export function useAssetTransferServerInfos(assets: Asset[], testnet: boolean): 
   const uncachedAssets = assets.filter(asset => !transferInfosCache.has(getAssetCacheKey(asset, testnet)))
 
   const fetchData = async () => {
-    const updatedTransferServers = await fetchTransferServers(String(horizon.serverURL), uncachedAssets)
+    const updatedTransferServers = await fetchTransferServers(horizon as any, uncachedAssets)
     const transferInfos = await fetchAssetTransferInfos(updatedTransferServers)
 
     for (const [asset, transferInfo] of Array.from(transferInfos.entries())) {
@@ -65,13 +63,11 @@ export function useAssetTransferServerInfos(assets: Asset[], testnet: boolean): 
     }
   }, [loadingPromiseCacheKey])
 
-  const data = assets.reduce<AssetTransferInfos["data"]>((reduced, asset) => {
+  const data = assets.reduce<WeakMap<Asset, ExtendedTransferInfo>>((map, asset) => {
     const cacheItem = transferInfosCache.get(getAssetCacheKey(asset, testnet))
-    return {
-      ...reduced,
-      [asset.getCode()]: cacheItem || { transferInfo: emptyTransferInfo, transferServer: null }
-    }
-  }, {})
+    map.set(asset, cacheItem || { transferInfo: emptyTransferInfo, transferServer: null })
+    return map
+  }, new WeakMap())
 
   return {
     data,

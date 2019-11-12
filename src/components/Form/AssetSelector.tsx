@@ -1,9 +1,9 @@
 import React from "react"
-import { Asset, Horizon } from "stellar-sdk"
+import { Asset } from "stellar-sdk"
 import MenuItem from "@material-ui/core/MenuItem"
 import TextField, { TextFieldProps } from "@material-ui/core/TextField"
 import { makeStyles } from "@material-ui/core/styles"
-import { balancelineToAsset, stringifyAsset } from "../../lib/stellar"
+import { stringifyAsset } from "../../lib/stellar"
 
 const useAssetSelectorStyles = makeStyles({
   helperText: {
@@ -24,13 +24,18 @@ const useAssetSelectorStyles = makeStyles({
 
 interface AssetSelectorProps {
   autoFocus?: TextFieldProps["autoFocus"]
+  assets: Asset[]
+  children?: React.ReactNode
+  className?: string
+  disabledAssets?: Asset[]
   helperText?: TextFieldProps["helperText"]
   label?: TextFieldProps["label"]
+  margin?: TextFieldProps["margin"]
   minWidth?: number | string
   onChange: (asset: Asset) => void
+  showXLM?: boolean
+  selected?: Asset
   style?: React.CSSProperties
-  trustlines: Horizon.BalanceLine[]
-  value?: Asset
 }
 
 function AssetSelector(props: AssetSelectorProps) {
@@ -38,7 +43,7 @@ function AssetSelector(props: AssetSelectorProps) {
 
   const onChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      const assets = [Asset.native(), ...props.trustlines.map(balancelineToAsset)]
+      const assets = [Asset.native(), ...props.assets]
 
       const matchingAsset = assets.find(asset => stringifyAsset(asset) === event.target.value)
 
@@ -51,19 +56,20 @@ function AssetSelector(props: AssetSelectorProps) {
         )
       }
     },
-    [props.onChange, props.trustlines]
+    [props.assets, props.onChange]
   )
 
   return (
     <TextField
       autoFocus={props.autoFocus}
+      className={props.className}
       helperText={props.helperText}
       label={props.label}
       onChange={onChange}
       placeholder="Select an asset"
       select
       style={{ flexShrink: 0, ...props.style }}
-      value={props.value ? stringifyAsset(props.value) : ""}
+      value={props.selected ? stringifyAsset(props.selected) : ""}
       FormHelperTextProps={{
         className: classes.helperText
       }}
@@ -77,26 +83,38 @@ function AssetSelector(props: AssetSelectorProps) {
       }}
       SelectProps={{
         classes: {
-          root: props.value ? undefined : classes.unselected,
+          root: props.selected ? undefined : classes.unselected,
           select: classes.select
         },
-        displayEmpty: props.value === undefined,
-        renderValue: () => (props.value ? props.value.getCode() : "Select")
+        displayEmpty: props.selected === undefined,
+        renderValue: () => (props.selected ? props.selected.getCode() : "Select")
       }}
     >
-      {props.value ? null : (
+      {props.selected ? null : (
         <MenuItem disabled value="">
           Select an asset
         </MenuItem>
       )}
-      <MenuItem value={stringifyAsset(Asset.native())}>XLM</MenuItem>
-      {props.trustlines.map(trustline => (
-        <MenuItem key={stringifyAsset(trustline)} value={stringifyAsset(trustline)}>
-          {trustline.asset_type === "native" ? "XLM" : trustline.asset_code}
+      {props.showXLM ? (
+        <MenuItem
+          disabled={props.disabledAssets && props.disabledAssets.some(someAsset => someAsset.isNative())}
+          value={stringifyAsset(Asset.native())}
+        >
+          XLM
+        </MenuItem>
+      ) : null}
+      {props.assets.map(asset => (
+        <MenuItem
+          key={stringifyAsset(asset)}
+          disabled={props.disabledAssets && props.disabledAssets.some(someAsset => someAsset.equals(asset))}
+          value={stringifyAsset(asset)}
+        >
+          {asset.getCode()}
         </MenuItem>
       ))}
+      {props.children}
     </TextField>
   )
 }
 
-export default AssetSelector
+export default React.memo(AssetSelector)

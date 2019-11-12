@@ -2,10 +2,7 @@ import BigNumber from "big.js"
 import nanoid from "nanoid"
 import React from "react"
 import { Asset, Horizon, Memo, MemoType, Server, Transaction } from "stellar-sdk"
-import FormControl from "@material-ui/core/FormControl"
 import InputAdornment from "@material-ui/core/InputAdornment"
-import MenuItem from "@material-ui/core/MenuItem"
-import Select from "@material-ui/core/Select"
 import TextField from "@material-ui/core/TextField"
 import SendIcon from "@material-ui/icons/Send"
 import { Account } from "../../context/accounts"
@@ -14,11 +11,12 @@ import { useFederationLookup } from "../../hooks/stellar"
 import { ObservedAccountData } from "../../hooks/stellar-subscriptions"
 import { useIsMobile, RefStateObject } from "../../hooks/userinterface"
 import { renderFormFieldError } from "../../lib/errors"
-import { findMatchingBalanceLine, getAccountMinimumBalance, stringifyAsset } from "../../lib/stellar"
+import { findMatchingBalanceLine, getAccountMinimumBalance } from "../../lib/stellar"
 import { isPublicKey, isStellarAddress } from "../../lib/stellar-address"
 import { createPaymentOperation, createTransaction, multisigMinimumFee } from "../../lib/transaction"
 import { formatBalance } from "../Account/AccountBalances"
 import { ActionButton, DialogActionsBox } from "../Dialog/Generic"
+import AssetSelector from "../Form/AssetSelector"
 import { PriceInput, QRReader } from "../Form/FormFields"
 import { HorizontalLayout } from "../Layout/Box"
 import Portal from "../Portal"
@@ -83,40 +81,6 @@ function validateFormValues(
   return { errors, success }
 }
 
-interface AssetSelectorProps {
-  assets: Asset[]
-  onSelect: (asset: Asset) => void
-  selected: Asset
-  style: React.CSSProperties
-}
-
-function AssetSelector(props: AssetSelectorProps) {
-  const handleSelection = React.useCallback(
-    (event: React.ChangeEvent<{ value: any }>) => {
-      const selectedAssetKey = event.target.value
-      const matchingAsset = props.assets.find(asset => stringifyAsset(asset) === selectedAssetKey)
-
-      if (matchingAsset) {
-        props.onSelect(matchingAsset)
-      } else {
-        throw Error(`Could not find selected asset in provided assets: ${event.target.value}`)
-      }
-    },
-    [props.assets, props.onSelect]
-  )
-  return (
-    <FormControl>
-      <Select disableUnderline onChange={handleSelection} style={props.style} value={stringifyAsset(props.selected)}>
-        {props.assets.map(asset => (
-          <MenuItem key={stringifyAsset(asset)} value={stringifyAsset(asset)}>
-            {asset.getCode()}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-  )
-}
-
 interface Props {
   accountData: ObservedAccountData
   actionsRef: RefStateObject
@@ -144,6 +108,7 @@ function PaymentCreationForm(props: Props) {
 
   const [memoPlaceholder, setMemoPlaceholder] = React.useState("Description (optional)")
   const [memoLabel, setMemoLabel] = React.useState("Memo")
+
   React.useEffect(() => {
     const knownAccount = wellknownAccounts.lookup(formValues.destination)
     if (knownAccount && knownAccount.tags.indexOf("exchange") !== -1) {
@@ -254,8 +219,9 @@ function PaymentCreationForm(props: Props) {
           assetCode={
             <AssetSelector
               assets={props.trustedAssets}
-              onSelect={code => setFormValue("asset", code)}
+              onChange={asset => setFormValue("asset", asset)}
               selected={formValues.asset}
+              showXLM
               style={{ alignSelf: "center" }}
             />
           }

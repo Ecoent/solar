@@ -27,7 +27,7 @@ import { Action, initialState, stateMachine, BeforeWebauthState } from "./statem
 import { useAssetTransferServerInfos } from "./transferservice"
 import WithdrawalKYCRedirect from "./WithdrawalKYCRedirect"
 import WithdrawalKYCStatus from "./WithdrawalKYCStatus"
-import AnchorWithdrawalInitForm from "./WithdrawalRequestForm"
+import WithdrawalRequestForm from "./WithdrawalRequestForm"
 import WithdrawalTransactionForm from "./WithdrawalTransactionForm"
 import TransactionReviewDialog from "../TransactionReview/TransactionReviewDialog"
 import Portal from "../Portal"
@@ -121,8 +121,6 @@ function WithdrawalDialogForm(props: Props) {
     } else {
       if (response.data.type === "interactive_customer_info_needed") {
         dispatch(Action.startInteractiveKYC(response.data))
-      } else if (response.data.type === "non_interactive_customer_info_needed") {
-        throw Error("Non-interactive KYC is not yet supported.")
       } else if (response.data.type === "customer_info_status" && response.data.status === "pending") {
         dispatch(Action.pendingKYC(response.data as KYCStatusResponse<"pending">))
       } else if (response.data.type === "customer_info_status" && response.data.status === "denied") {
@@ -273,7 +271,7 @@ function WithdrawalDialogForm(props: Props) {
     const webauth = currentState.step === "before-webauth" && currentState.webauth ? currentState.webauth : undefined
     return (
       <>
-        <AnchorWithdrawalInitForm
+        <WithdrawalRequestForm
           assets={props.assets}
           actionsRef={props.actionsRef}
           initialAsset={currentState.details && currentState.details.asset}

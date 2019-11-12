@@ -65,6 +65,7 @@ function AssetSelector(props: AssetSelectorProps) {
       className={props.className}
       helperText={props.helperText}
       label={props.label}
+      margin={props.margin}
       onChange={onChange}
       placeholder="Select an asset"
       select

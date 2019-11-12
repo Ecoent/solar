@@ -42,7 +42,11 @@ export function useAssetTransferServerInfos(assets: Asset[], testnet: boolean): 
   const uncachedAssets = assets.filter(asset => !transferInfosCache.has(getAssetCacheKey(asset, testnet)))
 
   const fetchData = async () => {
-    const updatedTransferServers = await fetchTransferServers(horizon as any, uncachedAssets)
+    const updatedTransferServers = await fetchTransferServers(horizon as any, uncachedAssets, {
+      walletName: "Solar",
+      walletURL: "https://solarwallet.io"
+    })
+
     const transferInfos = await fetchAssetTransferInfos(updatedTransferServers)
 
     for (const [asset, transferInfo] of Array.from(transferInfos.entries())) {

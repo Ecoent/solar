@@ -55,18 +55,15 @@ export function useAssetTransferServerInfos(assets: Asset[], testnet: boolean): 
     setCompletedFetches(completedFetches + 1)
   }
 
-  React.useEffect(
-    () => {
-      if (uncachedAssets.length > 0 && !transferInfosLoading.has(loadingPromiseCacheKey)) {
-        const promise = fetchData()
-        transferInfosLoading.set(loadingPromiseCacheKey, promise)
-        promise.catch(trackError)
-      } else {
-        // Nothing to do
-      }
-    },
-    [loadingPromiseCacheKey]
-  )
+  React.useEffect(() => {
+    if (uncachedAssets.length > 0 && !transferInfosLoading.has(loadingPromiseCacheKey)) {
+      const promise = fetchData()
+      transferInfosLoading.set(loadingPromiseCacheKey, promise)
+      promise.catch(trackError)
+    } else {
+      // Nothing to do
+    }
+  }, [loadingPromiseCacheKey])
 
   const data = assets.reduce<AssetTransferInfos["data"]>((reduced, asset) => {
     const cacheItem = transferInfosCache.get(getAssetCacheKey(asset, testnet))

@@ -33,12 +33,6 @@ const AccountContextMenuItem = React.forwardRef((props: ItemProps, ref) => {
   )
 })
 
-const MenuListProps = {
-  style: {
-    padding: 0
-  }
-}
-
 interface MenuProps {
   account: Account
   activated: boolean
@@ -52,16 +46,16 @@ interface MenuProps {
 
 function AccountContextMenu(props: MenuProps) {
   const isSmallScreen = useIsMobile()
+
   return (
     <ContextMenu
       anchor={props.children}
       menu={({ anchorEl, open, onClose, closeAndCall }) => (
         <Menu
-          anchorEl={anchorEl || undefined}
+          anchorEl={isSmallScreen ? document.body : anchorEl || undefined}
           disableAutoFocusItem={isSmallScreen}
-          open={open}
           onClose={onClose}
-          MenuListProps={MenuListProps}
+          open={open}
         >
           <AccountContextMenuItem
             disabled={!props.activated}
@@ -86,7 +80,7 @@ function AccountContextMenu(props: MenuProps) {
             icon={<SettingsIcon />}
             label="Account Settings"
             onClick={closeAndCall(props.onAccountSettings)}
-          />
+          />{" "}
         </Menu>
       )}
     />
